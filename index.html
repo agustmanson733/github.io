@@ -89,6 +89,26 @@
             transform: translateY(0);
         }
 
+        /* Progress Bar Styles */
+        #progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background-color: var(--border-color);
+            border-radius: 4px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            display: none; /* Hidden by default, shown with exercise-area */
+        }
+
+        #progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background-color: var(--secondary-color);
+            border-radius: 4px;
+            transition: width 0.5s ease-in-out; /* Smooth animation */
+        }
+
+
         .exercise-area {
             display: none; /* Hidden by default */
             margin-top: 30px;
@@ -443,6 +463,10 @@
             </div>
         </div>
 
+        <div id="progress-bar-container">
+            <div id="progress-bar-fill"></div>
+        </div>
+
         <div id="exercise-area" class="exercise-area">
             <p class="question-text" id="question-text"></p>
 
@@ -522,7 +546,7 @@
             terras: [
                 { dutch: "Sorry, mag ik een bestelling plaatsen", french: "Désolé, puis-je passer une commande ?" },
                 { dutch: "Ik zou graag een cola willen", french: "Je voudrais un coca, s'il vous plaît" },
-                { dutch: "Danku, is het mogelijk om hier iets te eten?", french: "Merci, est-ce possible de manger quelque chose ici?" },
+                { dutch: "Danku, is het mogelijk om hier iets te eten?", french: "Merci, est-ce possible de manger quelque chose hier?" },
                 { dutch: "Wat voor sandwiches heeft u ?", french: "Quels types de sandwichs avez-vous?" },
                 { dutch: "Ik wil graag een broodje kaas alstublieft", french: "Je voudrais un sandwich au fromage, s'il vous plaît" },
                 { dutch: "Dankuwel", french: "Merci" },
@@ -600,6 +624,9 @@
         const restartButton = document.getElementById('restart-button');
         const backToListsButton = document.getElementById('back-to-lists-button');
 
+        const progressBarContainer = document.getElementById('progress-bar-container');
+        const progressBarFill = document.getElementById('progress-bar-fill');
+
         // Exercise type containers
         const translationExerciseDiv = document.getElementById('translation-exercise');
         const multipleChoiceExerciseDiv = document.getElementById('multiple-choice-exercise');
@@ -653,8 +680,13 @@
             listSelectionArea.style.display = 'none';
             exerciseArea.style.display = 'none';
             resultsArea.style.display = 'none';
+            progressBarContainer.style.display = 'none'; // Hide progress bar by default
 
             document.getElementById(sectionId).style.display = 'block';
+
+            if (sectionId === 'exercise-area') {
+                progressBarContainer.style.display = 'block'; // Show progress bar when in exercise mode
+            }
         }
 
         function startExercise() {
@@ -663,6 +695,7 @@
             correctAnswers = 0;
             incorrectAnswers = 0;
             missedPhrases = [];
+            updateProgressBar(); // Initialize progress bar
             loadNewPhrase();
         }
 
@@ -684,6 +717,7 @@
             nextButton.style.display = 'none';
             hintButton.style.display = 'none';
             answerInput.value = '';
+            updateProgressBar(); // Reset progress bar
         }
 
         function hideAllExerciseTypes() {
@@ -747,6 +781,7 @@
                         setupFillInTheBlanksExercise(phrase);
                         break;
                 }
+                updateProgressBar(); // Update progress bar for new phrase
             } else {
                 showResults();
             }
@@ -781,6 +816,7 @@
             feedback.style.display = 'block';
             checkButton.style.display = 'none';
             nextButton.style.display = 'block';
+            updateProgressBar(); // Update progress bar after checking answer
         }
 
         function hideFeedback() {
@@ -972,6 +1008,16 @@
                     li.appendChild(translationSpan);
                     mistakesUl.appendChild(li);
                 });
+            }
+        }
+
+        // --- Progress Bar Function ---
+        function updateProgressBar() {
+            if (currentList.length > 0) {
+                const progress = (currentPhraseIndex / currentList.length) * 100;
+                progressBarFill.style.width = `${progress}%`;
+            } else {
+                progressBarFill.style.width = '0%';
             }
         }
 
