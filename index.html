@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frans Leren - Duolingo-stijl</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --background-color: #1c1c1e;
+            --card-background: #2c2c2e;
+            --text-color: #f2f2f7;
+            --primary-color: #0a84ff; /* Apple Blue */
+            --secondary-color: #34c759; /* Apple Green */
+            --danger-color: #ff3b30; /* Apple Red */
+            --border-color: #48484a;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --hint-color: #98989d;
+            --input-background: #3a3a3c;
+            --correct-answer-color: #34c759;
+            --incorrect-answer-color: #ff3b30;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: var(--card-background);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px var(--shadow-color);
+            padding: 30px;
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+            margin-top: 50px;
+            border: 1px solid var(--border-color);
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+
+        .section-title {
+            color: var(--primary-color);
+            font-size: 1.8em;
+            margin-top: 30px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .selector-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+
+        .list-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 15px 20px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            font-weight: 600;
+        }
+
+        .list-button:hover {
+            background-color: #007aff; /* Darker Apple Blue */
+            transform: translateY(-2px);
+        }
+
+        .list-button:active {
+            transform: translateY(0);
+        }
+
+        .exercise-area {
+            display: none; /* Hidden by default */
+            margin-top: 30px;
+        }
+
+        .question-text {
+            font-size: 1.6em;
+            margin-bottom: 30px;
+            color: var(--text-color);
+            font-weight: 600;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .answer-input {
+            width: 80%;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--input-background);
+            color: var(--text-color);
+            font-size: 1.1em;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .answer-input:focus {
+            border-color: var(--primary-color);
+        }
+
+        .hint-text {
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: var(--hint-color);
+            text-align: left;
+            width: 80%;
+        }
+
+        .feedback {
+            margin-top: 20px;
+            font-size: 1.1em;
+            font-weight: 600;
+            display: none;
+        }
+
+        .feedback.correct {
+            color: var(--secondary-color);
+        }
+
+        .feedback.incorrect {
+            color: var(--danger-color);
+        }
+
+        .buttons-group {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .check-button, .next-button, .hint-button, .restart-button, .back-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            font-weight: 600;
+        }
+
+        .check-button:hover, .next-button:hover, .hint-button:hover, .restart-button:hover, .back-button:hover {
+            background-color: #007aff;
+            transform: translateY(-1px);
+        }
+
+        .check-button:disabled, .next-button:disabled, .hint-button:disabled {
+            background-color: var(--border-color);
+            cursor: not-allowed;
+        }
+
+        .next-button {
+            display: none;
+            background-color: var(--secondary-color);
+        }
+
+        .next-button:hover {
+            background-color: #28cd41;
+        }
+
+        .hint-button {
+            background-color: var(--hint-color);
+        }
+
+        .hint-button:hover {
+            background-color: #8a8a8f;
+        }
+
+        .restart-button, .back-button {
+            background-color: var(--hint-color);
+        }
+        .restart-button:hover, .back-button:hover {
+            background-color: #8a8a8f;
+        }
+
+
+        /* Multiple Choice Specific */
+        .multiple-choice-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 80%;
+            margin: 0 auto 20px auto;
+        }
+
+        .mc-option-button {
+            background-color: var(--input-background);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 15px;
+            font-size: 1.1em;
+            cursor: pointer;
+            text-align: left;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+        }
+
+        .mc-option-button:hover {
+            background-color: #48484a;
+            border-color: var(--primary-color);
+        }
+
+        .mc-option-button.selected {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px var(--primary-color);
+        }
+
+        .mc-option-button.correct {
+            background-color: var(--correct-answer-color);
+            border-color: var(--correct-answer-color);
+            color: white;
+        }
+
+        .mc-option-button.incorrect {
+            background-color: var(--danger-color);
+            border-color: var(--danger-color);
+            color: white;
+        }
+        .mc-option-button.correct-after-incorrect {
+            background-color: #28cd41; /* Slightly darker green */
+            border-color: #28cd41;
+        }
+
+
+        /* Drag and Drop Specific */
+        .drag-drop-words {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .draggable-word {
+            background-color: var(--input-background);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px 15px;
+            cursor: grab;
+            font-size: 1.1em;
+            transition: background-color 0.2s ease;
+        }
+
+        .draggable-word:hover {
+            background-color: #48484a;
+        }
+
+        .drop-zone {
+            min-height: 50px;
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            margin-bottom: 20px;
+            background-color: var(--input-background);
+        }
+
+        .dropped-word {
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin: 2px;
+        }
+
+        /* Matching Specific */
+        .matching-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 90%;
+            margin: 0 auto 20px auto;
+        }
+
+        .match-card {
+            background-color: var(--input-background);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+            text-align: center;
+        }
+
+        .match-card:hover {
+            background-color: #48484a;
+        }
+
+        .match-card.selected {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px var(--primary-color);
+        }
+
+        .match-card.matched {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+            color: white;
+            cursor: default;
+        }
+
+        .match-card.incorrect-match {
+            background-color: var(--danger-color);
+            border-color: var(--danger-color);
+            color: white;
+        }
+
+
+        /* Fill-in-the-blanks specific */
+        .fill-in-sentence {
+            font-size: 1.6em;
+            margin-bottom: 30px;
+            color: var(--text-color);
+            font-weight: 600;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .fill-in-blank {
+            width: 120px; /* Adjust as needed */
+            padding: 8px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: var(--input-background);
+            color: var(--text-color);
+            font-size: 1em;
+            outline: none;
+            text-align: center;
+            transition: border-color 0.2s ease;
+        }
+        .fill-in-blank:focus {
+            border-color: var(--primary-color);
+        }
+
+        .fill-in-word {
+            padding: 8px 0;
+        }
+
+
+        /* Results Area */
+        .results-area {
+            display: none;
+            margin-top: 30px;
+            text-align: left;
+        }
+
+        .results-area h2 {
+            color: var(--primary-color);
+            font-size: 2em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .results-summary p {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        .results-summary .score {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: var(--secondary-color);
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .mistakes-list ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .mistakes-list li {
+            background-color: var(--input-background);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.1em;
+        }
+
+        .mistake-original {
+            color: var(--hint-color);
+        }
+
+        .mistake-translation {
+            color: var(--danger-color);
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Frans Leren</h1>
+
+        <div id="list-selection-area">
+            <h2 class="section-title">Kies een lijst om te oefenen:</h2>
+            <div class="selector-grid">
+                <button class="list-button" data-list="camping">Op de camping</button>
+                <button class="list-button" data-list="terras">Op het terras van een café</button>
+                <button class="list-button" data-list="restaurant">In een restaurant</button>
+                <button class="list-button" data-list="hotel">Bij het hotel</button>
+                <button class="list-button" data-list="boodschappen">Boodschappen doen</button>
+            </div>
+        </div>
+
+        <div id="exercise-area" class="exercise-area">
+            <p class="question-text" id="question-text"></p>
+
+            <div id="translation-exercise" style="display: none;">
+                <div class="input-group">
+                    <input type="text" id="answer-input" class="answer-input" placeholder="Typ je antwoord hier..." autofocus>
+                    <p class="hint-text" id="hint-text"></p>
+                </div>
+            </div>
+
+            <div id="multiple-choice-exercise" style="display: none;">
+                <div class="multiple-choice-options" id="mc-options">
+                    </div>
+            </div>
+
+            <div id="drag-drop-exercise" style="display: none;">
+                <div class="drop-zone" id="drag-drop-zone">
+                    </div>
+                <div class="drag-drop-words" id="draggable-words-container">
+                    </div>
+            </div>
+
+            <div id="matching-exercise" style="display: none;">
+                <div class="matching-grid" id="matching-grid-container">
+                    </div>
+            </div>
+
+            <div id="fill-in-the-blanks-exercise" style="display: none;">
+                <div class="fill-in-sentence" id="fill-in-sentence-container">
+                    </div>
+            </div>
+
+
+            <p class="feedback" id="feedback"></p>
+
+            <div class="buttons-group">
+                <button class="hint-button" id="hint-button" style="display: none;">Hint</button>
+                <button class="check-button" id="check-button">Controleer</button>
+                <button class="next-button" id="next-button">Volgende</button>
+            </div>
+        </div>
+
+        <div id="results-area" class="results-area">
+            <h2>Oefening voltooid!</h2>
+            <div class="results-summary">
+                <p>Aantal goed: <span id="correct-count">0</span></p>
+                <p>Aantal fout: <span id="incorrect-count">0</span></p>
+                <p class="score">Cijfer: <span id="grade">0.0</span> / 10.0</p>
+            </div>
+            <div class="mistakes-list">
+                <h3>Zinnen om op te letten:</h3>
+                <ul id="mistakes-ul">
+                    </ul>
+            </div>
+            <div class="buttons-group">
+                <button class="restart-button" id="restart-button">Nieuwe oefening</button>
+                <button class="back-button" id="back-to-lists-button">Terug naar lijsten</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data structure for phrases (unchanged)
+        const phrases = {
+            camping: [
+                { dutch: "Goedenmiddag Meneer/Mevrouw", french: "Bonjour Monsieur/Madame" },
+                { dutch: "Is er nog plaats?", french: "Est-ce qu'il y a encore de la place?" },
+                { dutch: "We zijn met vier personen", french: "Nous sommes quatre personnes" },
+                { dutch: "We hebben twee tenten, een grote en een kleine", french: "Nous avons deux tentes, une grande et une petite" },
+                { dutch: "Hoeveel kost dat?", french: "Combien ça coûte?" },
+                { dutch: "Oké, we willen graag drie nachten blijven", french: "D'accord, nous voudrions rester trois nuits" },
+                { dutch: "Ja, ... alstublieft", french: "Oui, ... s'il vous plaît" },
+                { dutch: "Ik houd liever mijn pas, wilt u een kopie maken?", french: "Je préfère garder mon passeport, pouvez-vous faire une copie?" },
+                { dutch: "Dankuwel. Waar kunnen we de tenten opzetten?", french: "Merci. Où pouvons-nous installer les tentes?" },
+                { dutch: "Is die plaats ver van het washok?", french: "Cet emplacement est-il loin des sanitaires?" }
+            ],
+            terras: [
+                { dutch: "Sorry, mag ik een bestelling plaatsen", french: "Désolé, puis-je passer une commande ?" },
+                { dutch: "Ik zou graag een cola willen", french: "Je voudrais un coca, s'il vous plaît" },
+                { dutch: "Danku, is het mogelijk om hier iets te eten?", french: "Merci, est-ce possible de manger quelque chose ici?" },
+                { dutch: "Wat voor sandwiches heeft u ?", french: "Quels types de sandwichs avez-vous?" },
+                { dutch: "Ik wil graag een broodje kaas alstublieft", french: "Je voudrais un sandwich au fromage, s'il vous plaît" },
+                { dutch: "Dankuwel", french: "Merci" },
+                { dutch: "Mag ik een kop koffie met melk", french: "Puis-je avoir une tasse de café avec du lait?" },
+                { dutch: "Sorry, ik heb het niet goed begrepen", french: "Désolé, je n'ai pas bien compris" },
+                { dutch: "Graag een grote kop koffie met melk", french: "Une grande tasse de café avec du lait, s'il vous plaît" },
+                { dutch: "Danku, kan ik meteen afrekenen", french: "Merci, puis-je payer tout de suite ?" },
+                { dutch: "Alstublieft", french: "S'il vous plaît" },
+                { dutch: "Nee, het spijt me. Ik heb alleen maar een biljet van 50 euro", french: "Non, désolé. Je n'ai qu'un billet de 50 euros" },
+                { dutch: "Bedankt, is er een pinautomaat in de buurt?", french: "Merci, y a-t-il un distributeur automatique à proximité ?" },
+                { dutch: "Dank u, tot ziens", french: "Merci, au revoir" }
+            ],
+            restaurant: [
+                { dutch: "Goedenavond, mevrouw/meneer", french: "Bonsoir Madame/Monsieur" },
+                { dutch: "We zijn met zijn tweeën", french: "Nous sommes deux" },
+                { dutch: "Nee, we hebben niet gereserveerd", french: "Non, nous n'avons pas réservé" },
+                { dutch: "Ja, dat is uitstekend", french: "Oui, c'est parfait" },
+                { dutch: "Nee, dankuwel mogen we de kaart?", french: "Non merci, pouvons-nous avoir la carte?" },
+                { dutch: "We wilden het menu van 25 euro nemen", french: "Nous voudrions le menu à 25 euros" },
+                { dutch: "Mineraalwater en een halve liter rode wijn van het huis, alstublieft", french: "De l'eau minérale et un demi-litre de vin rouge de la maison, s'il vous plaît" },
+                { dutch: "Graag goed doorbakken!", french: "Bien cuit, s'il vous plaît !" },
+                { dutch: "Ja, we zijn klaar. Het was erg lekker!", french: "Oui, nous avons terminé. C'était très bon !" },
+                { dutch: "Een crème caramel en een sorbet", french: "Une crème caramel et un sorbet" },
+                { dutch: "Dankuwel!", french: "Merci!" },
+                { dutch: "Ja maar we wilden nog twee espresso's !", french: "Oui, mais nous voulions encore deux expressos!" },
+                { dutch: "Dankuwel, mogen wij de rekening?", french: "Merci, l'addition s'il vous plaît" },
+                { dutch: "Bedankt, meneer/mevrouw", french: "Merci, Monsieur/Madame" },
+                { dutch: "Laat u maar zitten", french: "C'est bon, gardez la monnaie" },
+                { dutch: "Dankuwel", french: "Merci" }
+            ],
+            hotel: [
+                { dutch: "Dag meneer/mevrouw!", french: "Bonjour Monsieur/Madame!" },
+                { dutch: "Heeft u nog kamers vrij ?", french: "Avez-vous encore des chambres de libres ?" },
+                { dutch: "We zouden graag een tweepersoonskamer hebben", french: "nous voudrions une chambre pour deux personnes" },
+                { dutch: "Ik zou graag een kamer hebben die op de binnenplaats uitkijkt", french: "Je voudrais une chambre qui donne sur la cour" },
+                { dutch: "Hoeveel kost die kamer?", french: "Combien coûte cette chambre?" },
+                { dutch: "Is het ontbijt inbegrepen ?", french: "Le petit déjeuner est-il compris?" },
+                { dutch: "Heeft die kamer een douche?", french: "Cette chambre a-t-elle une douche?" },
+                { dutch: "Wij hebben liever een kamer met een douche, maar dat is geen probleem", french: "Nous préférons une chambre avec douche, mais ce n'est pas grave" },
+                { dutch: "Mogen we de kamer even zien?", french: "Pouvons-nous voir la chambre?" },
+                { dutch: "De kamer is prima, en we wilden hem graag reserveren voor twee nachten", french: "La chambre est très bien, nous voudrions la réserver pour deux nuits" },
+                { dutch: "Hoelaat is het ontbijt?", french: "À quelle heure est le petit déjeuner?" },
+                { dutch: "Waar kan ik de auto neerzetten?", french: "Où peut-on garer la voiture ?" },
+                { dutch: "Dankuwel, We gaan de bagage ophalen", french: "Merci, nous allons chercher les bagages" }
+            ],
+            boodschappen: [
+                { dutch: "Ik ben nog niet aan de beurt. Deze vrouw was voor mij", french: "Je ne suis pas encore servi. Cette dame était avant moi" },
+                { dutch: "Een kilo appels, alstublieft", french: "Un kilo de pommes, s'il vous plaît" },
+                { dutch: "Sorry, Ik begrijp het niet", french: "Désolé, je ne comprends pas" },
+                { dutch: "Golden's graag", french: "Des Golden, s'il vous plaît" },
+                { dutch: "Hebt u ook bananen?", french: "Avez-vous aussi des bananes?" },
+                { dutch: "Een pond, alstublieft", french: "Une livre, s'il vous plaît" },
+                { dutch: "Hebt u ook kiwi's?", french: "Avez-vous aussi des kiwis?" },
+                { dutch: "Dat is niet erg, hoeveel ben ik schuldig?", french: "Ce n'est pas grave, je vous dois combien ?" },
+                { dutch: "Alstublieft", french: "Voilà / S'il vous plaît" },
+                { dutch: "Wacht u even, ik zal kijken. Ja ik heb kleingeld", french: "Un instant, je vais regarder. Oui, j'ai de la monnaie" },
+                { dutch: "Alstublieft", french: "Voilà / Tenez" },
+                { dutch: "Nee bedankt, ik heb een mand bij me", french: "Non merci, j'ai un panier avec moi" },
+                { dutch: "Bedankt, tot ziens", french: "Merci, au revoir" }
+            ]
+        };
+
+        const listSelectionArea = document.getElementById('list-selection-area');
+        const exerciseArea = document.getElementById('exercise-area');
+        const resultsArea = document.getElementById('results-area');
+
+        const questionText = document.getElementById('question-text');
+        const answerInput = document.getElementById('answer-input');
+        const hintText = document.getElementById('hint-text');
+        const feedback = document.getElementById('feedback');
+
+        const checkButton = document.getElementById('check-button');
+        const nextButton = document.getElementById('next-button');
+        const hintButton = document.getElementById('hint-button');
+        const restartButton = document.getElementById('restart-button');
+        const backToListsButton = document.getElementById('back-to-lists-button');
+
+        // Exercise type containers
+        const translationExerciseDiv = document.getElementById('translation-exercise');
+        const multipleChoiceExerciseDiv = document.getElementById('multiple-choice-exercise');
+        const dragDropExerciseDiv = document.getElementById('drag-drop-exercise');
+        const matchingExerciseDiv = document.getElementById('matching-exercise');
+        const fillInTheBlanksExerciseDiv = document.getElementById('fill-in-the-blanks-exercise');
+
+        const mcOptionsContainer = document.getElementById('mc-options');
+        const draggableWordsContainer = document.getElementById('draggable-words-container');
+        const dragDropZone = document.getElementById('drag-drop-zone');
+        const matchingGridContainer = document.getElementById('matching-grid-container');
+        const fillInSentenceContainer = document.getElementById('fill-in-sentence-container');
+
+
+        let currentList = [];
+        let currentPhraseIndex = 0;
+        let correctAnswers = 0;
+        let incorrectAnswers = 0;
+        let missedPhrases = [];
+        let currentExerciseType = '';
+        let selectedMCOption = null;
+        let dragDropOrder = [];
+        let matchingSelection = []; // Stores up to two selected { element, value, type } objects
+        let availableMatchingPairs = [];
+
+        // Updated: Removed 'word-to-picture' as per previous decision
+        const exerciseTypes = ['translation', 'multiple-choice', 'drag-and-drop', 'matching', 'fill-in-the-blanks'];
+
+        // Event Listeners for List Selection
+        document.querySelectorAll('.list-button').forEach(button => {
+            button.addEventListener('click', (event) => {
+                const listName = event.target.dataset.list;
+                currentList = shuffleArray([...phrases[listName]]); // Create a shuffled copy
+                startExercise();
+            });
+        });
+
+        checkButton.addEventListener('click', checkAnswer);
+        nextButton.addEventListener('click', showNextPhrase);
+        hintButton.addEventListener('click', showHint);
+        restartButton.addEventListener('click', startExercise);
+        backToListsButton.addEventListener('click', resetApplication);
+
+        answerInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                checkAnswer();
+            }
+        });
+
+        function showSection(sectionId) {
+            listSelectionArea.style.display = 'none';
+            exerciseArea.style.display = 'none';
+            resultsArea.style.display = 'none';
+
+            document.getElementById(sectionId).style.display = 'block';
+        }
+
+        function startExercise() {
+            showSection('exercise-area');
+            currentPhraseIndex = 0;
+            correctAnswers = 0;
+            incorrectAnswers = 0;
+            missedPhrases = [];
+            loadNewPhrase();
+        }
+
+        function resetApplication() {
+            showSection('list-selection-area');
+            currentList = [];
+            currentPhraseIndex = 0;
+            correctAnswers = 0;
+            incorrectAnswers = 0;
+            missedPhrases = [];
+            currentExerciseType = '';
+            selectedMCOption = null;
+            dragDropOrder = [];
+            matchingSelection = [];
+            availableMatchingPairs = [];
+            clearExerciseDisplays();
+            hideFeedback();
+            checkButton.style.display = 'block';
+            nextButton.style.display = 'none';
+            hintButton.style.display = 'none';
+            answerInput.value = '';
+        }
+
+        function hideAllExerciseTypes() {
+            translationExerciseDiv.style.display = 'none';
+            multipleChoiceExerciseDiv.style.display = 'none';
+            dragDropExerciseDiv.style.display = 'none';
+            matchingExerciseDiv.style.display = 'none';
+            fillInTheBlanksExerciseDiv.style.display = 'none';
+            hintButton.style.display = 'none';
+        }
+
+        function clearExerciseDisplays() {
+            mcOptionsContainer.innerHTML = '';
+            draggableWordsContainer.innerHTML = '';
+            dragDropZone.innerHTML = '';
+            matchingGridContainer.innerHTML = '';
+            fillInSentenceContainer.innerHTML = '';
+            answerInput.value = '';
+            hintText.textContent = '';
+        }
+
+        function loadNewPhrase() {
+            clearExerciseDisplays();
+            hideFeedback();
+            checkButton.style.display = 'block';
+            nextButton.style.display = 'none';
+            hintButton.style.display = 'none';
+            answerInput.disabled = false;
+            checkButton.disabled = false;
+
+            if (currentPhraseIndex < currentList.length) {
+                const phrase = currentList[currentPhraseIndex];
+                const availableTypes = [...exerciseTypes];
+
+                // Remove exercise types that don't fit the current phrase
+                // For very short phrases, fill-in-the-blanks or drag-and-drop might not be suitable
+                if (phrase.french.split(' ').length < 2) {
+                    const idx = availableTypes.indexOf('drag-and-drop');
+                    if (idx > -1) availableTypes.splice(idx, 1);
+                    const idx2 = availableTypes.indexOf('fill-in-the-blanks');
+                    if (idx2 > -1) availableTypes.splice(idx2, 1);
+                }
+
+                currentExerciseType = availableTypes[Math.floor(Math.random() * availableTypes.length)];
+                hideAllExerciseTypes();
+
+                switch (currentExerciseType) {
+                    case 'translation':
+                        setupTranslationExercise(phrase);
+                        break;
+                    case 'multiple-choice':
+                        setupMultipleChoiceExercise(phrase);
+                        break;
+                    case 'drag-and-drop':
+                        setupDragAndDropExercise(phrase);
+                        break;
+                    case 'matching':
+                        setupMatchingExercise();
+                        break;
+                    case 'fill-in-the-blanks':
+                        setupFillInTheBlanksExercise(phrase);
+                        break;
+                }
+            } else {
+                showResults();
+            }
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        /**
+         * Normalizes text by converting to lowercase, removing accents,
+         * removing punctuation, and trimming extra spaces.
+         * @param {string} text The input string.
+         * @returns {string} The normalized string.
+         */
+        function normalizeText(text) {
+            return text.toLowerCase()
+                       .normalize("NFD") // Decompose accented characters
+                       .replace(/[\u0300-\u036f]/g, "") // Remove diacritics (accents)
+                       .replace(/[.,!?';:"()«»-]/g, "") // Remove common punctuation, including hyphens and French quotes
+                       .replace(/\s{2,}/g, " ") // Replace multiple spaces with single space
+                       .trim();
+        }
+
+        function showFeedback(isCorrect, message) {
+            feedback.textContent = message;
+            feedback.className = `feedback ${isCorrect ? 'correct' : 'incorrect'}`;
+            feedback.style.display = 'block';
+            checkButton.style.display = 'none';
+            nextButton.style.display = 'block';
+        }
+
+        function hideFeedback() {
+            feedback.style.display = 'none';
+        }
+
+        function checkAnswer() {
+            let isCorrect = false;
+            let currentPhrase = currentList[currentPhraseIndex];
+
+            if (currentExerciseType === 'translation') {
+                const userAnswer = normalizeText(answerInput.value);
+                const correctAnswer = normalizeText(currentPhrase.french);
+                isCorrect = (userAnswer === correctAnswer);
+            } else if (currentExerciseType === 'multiple-choice') {
+                if (selectedMCOption) {
+                    const selectedAnswer = selectedMCOption.textContent;
+                    isCorrect = (normalizeText(selectedAnswer) === normalizeText(currentPhrase.french));
+                }
+                // Visual feedback for MC
+                Array.from(mcOptionsContainer.children).forEach(button => {
+                    if (normalizeText(button.textContent) === normalizeText(currentPhrase.french)) {
+                        button.classList.add('correct');
+                    } else if (button === selectedMCOption && !isCorrect) {
+                        button.classList.add('incorrect');
+                    } else if (button !== selectedMCOption && !isCorrect) {
+                        // If selected was incorrect, mark the correct one for user to see
+                        if (normalizeText(button.textContent) === normalizeText(currentPhrase.french)) {
+                             button.classList.add('correct-after-incorrect');
+                        }
+                    }
+                });
+                // Disable all buttons
+                Array.from(mcOptionsContainer.children).forEach(button => button.disabled = true);
+            } else if (currentExerciseType === 'drag-and-drop') {
+                const userAnswer = dragDropOrder.map(word => word.textContent).join(' ');
+                const correctAnswer = currentPhrase.french;
+                isCorrect = (normalizeText(userAnswer) === normalizeText(correctAnswer));
+
+                // Visual feedback for Drag and Drop
+                dragDropZone.innerHTML = ''; // Clear and re-populate with colored words
+                const correctWords = currentPhrase.french.split(' ');
+                const userWords = dragDropOrder.map(word => word.textContent);
+
+                // This part needs adjustment to match normalized words for visual feedback
+                const normalizedCorrectWords = correctWords.map(word => normalizeText(word));
+                const normalizedUserWords = userWords.map(word => normalizeText(word));
+
+
+                for (let i = 0; i < correctWords.length; i++) {
+                    const span = document.createElement('span');
+                    span.classList.add('dropped-word');
+                    span.textContent = userWords[i] || '[MISSING]'; // Display actual user input or [MISSING]
+
+                    if (normalizedUserWords[i] && normalizedUserWords[i] === normalizedCorrectWords[i]) {
+                        span.style.backgroundColor = 'var(--correct-answer-color)';
+                    } else {
+                        span.style.backgroundColor = 'var(--danger-color)';
+                    }
+                    dragDropZone.appendChild(span);
+                }
+                 // Show correct answer if incorrect
+                if (!isCorrect) {
+                    const correctSentenceSpan = document.createElement('p');
+                    correctSentenceSpan.style.color = 'var(--secondary-color)';
+                    correctSentenceSpan.style.marginTop = '10px';
+                    correctSentenceSpan.style.fontWeight = 'bold';
+                    correctSentenceSpan.textContent = `Correct: ${currentPhrase.french}`;
+                    dragDropZone.appendChild(correctSentenceSpan);
+                }
+
+                // Disable dragging
+                Array.from(draggableWordsContainer.children).forEach(word => word.draggable = false);
+            } else if (currentExerciseType === 'matching') {
+                // Matching exercise is self-checking as pairs are formed
+                // We check if all pairs are correctly matched
+                isCorrect = true; // Assume correct until proven otherwise
+                matchingGridContainer.querySelectorAll('.match-card:not(.matched)').forEach(card => {
+                    isCorrect = false; // If any unmatched cards, it's not correct yet
+                });
+                if (!isCorrect) {
+                     showFeedback(false, "Nog niet alle paren zijn correct.");
+                     // Keep current exercise open until all are matched
+                     checkButton.style.display = 'block';
+                     nextButton.style.display = 'none';
+                     return; // Don't proceed to score update until fully matched
+                } else {
+                    showFeedback(true, "Alle paren zijn correct gematched!");
+                }
+            } else if (currentExerciseType === 'fill-in-the-blanks') {
+                const inputs = fillInSentenceContainer.querySelectorAll('.fill-in-blank');
+                let allBlanksCorrect = true;
+                const correctWords = currentPhrase.french.split(' ');
+                
+                inputs.forEach((input) => {
+                    const userAnswer = normalizeText(input.value);
+                    const blankIndex = parseInt(input.dataset.blankIndex);
+                    const correctWord = normalizeText(correctWords[blankIndex]);
+
+                    if (userAnswer === correctWord) {
+                        input.style.borderColor = 'var(--correct-answer-color)';
+                        input.style.color = 'var(--correct-answer-color)';
+                    } else {
+                        input.style.borderColor = 'var(--danger-color)';
+                        input.style.color = 'var(--danger-color)';
+                        allBlanksCorrect = false;
+                    }
+                    input.disabled = true; // Disable input after checking
+                });
+
+                isCorrect = allBlanksCorrect;
+
+                if (!isCorrect) {
+                    const originalSentenceElement = document.createElement('p');
+                    originalSentenceElement.textContent = `Correct: ${currentPhrase.french}`;
+                    originalSentenceElement.style.color = 'var(--secondary-color)';
+                    originalSentenceElement.style.marginTop = '15px';
+                    fillInSentenceContainer.appendChild(originalSentenceElement);
+                }
+            }
+
+            if (isCorrect) {
+                correctAnswers++;
+                showFeedback(true, "Correct!");
+            } else {
+                incorrectAnswers++;
+                missedPhrases.push(currentPhrase);
+                if (currentExerciseType === 'translation') {
+                    showFeedback(false, `Fout! Het juiste antwoord is: ${currentPhrase.french}`);
+                } else if (currentExerciseType === 'multiple-choice' || currentExerciseType === 'drag-and-drop' || currentExerciseType === 'fill-in-the-blanks') {
+                     showFeedback(false, "Helaas, niet helemaal correct.");
+                }
+            }
+
+            answerInput.disabled = true;
+            checkButton.disabled = true;
+        }
+
+        function showNextPhrase() {
+            currentPhraseIndex++;
+            loadNewPhrase();
+        }
+
+        function showHint() {
+            const currentPhrase = currentList[currentPhraseIndex];
+            if (currentExerciseType === 'translation') {
+                const frenchWords = currentPhrase.french.split(' ');
+                let hint = frenchWords.map(word => word.charAt(0) + '_'.repeat(word.length - 1)).join(' ');
+                hintText.textContent = `Hint: ${hint}`;
+            } else {
+                hintText.textContent = "Hints zijn alleen beschikbaar voor vertaalopdrachten.";
+            }
+            hintButton.disabled = true;
+        }
+
+        function showResults() {
+            showSection('results-area');
+            document.getElementById('correct-count').textContent = correctAnswers;
+            document.getElementById('incorrect-count').textContent = incorrectAnswers;
+
+            const totalQuestions = correctAnswers + incorrectAnswers;
+            let grade = 0;
+            if (totalQuestions > 0) {
+                grade = (correctAnswers / totalQuestions) * 9 + 1; // Scale to 1-10
+            }
+            document.getElementById('grade').textContent = grade.toFixed(1);
+
+            const mistakesUl = document.getElementById('mistakes-ul');
+            mistakesUl.innerHTML = '';
+            if (missedPhrases.length === 0) {
+                const li = document.createElement('li');
+                li.textContent = "Geweldig! Je had alles goed!";
+                mistakesUl.appendChild(li);
+            } else {
+                // Filter out duplicate mistakes that might occur from matching exercises
+                const uniqueMistakes = Array.from(new Set(missedPhrases.map(JSON.stringify))).map(JSON.parse);
+
+                uniqueMistakes.forEach(phrase => {
+                    const li = document.createElement('li');
+                    const originalSpan = document.createElement('span');
+                    originalSpan.classList.add('mistake-original');
+                    originalSpan.textContent = phrase.dutch;
+
+                    const translationSpan = document.createElement('span');
+                    translationSpan.classList.add('mistake-translation');
+                    translationSpan.textContent = phrase.french;
+
+                    li.appendChild(originalSpan);
+                    li.appendChild(translationSpan);
+                    mistakesUl.appendChild(li);
+                });
+            }
+        }
+
+        // --- Exercise Type Setups ---
+
+        function setupTranslationExercise(phrase) {
+            translationExerciseDiv.style.display = 'block';
+            questionText.textContent = `Vertaal naar het Frans: "${phrase.dutch}"`;
+            answerInput.value = '';
+            hintText.textContent = '';
+            hintButton.style.display = 'inline-block';
+            answerInput.focus();
+        }
+
+        function setupMultipleChoiceExercise(phrase) {
+            multipleChoiceExerciseDiv.style.display = 'block';
+            questionText.textContent = `Kies de juiste vertaling voor: "${phrase.dutch}"`;
+            mcOptionsContainer.innerHTML = '';
+            selectedMCOption = null;
+
+            let options = [phrase.french];
+            // Add 2-3 random incorrect options
+            while (options.length < 4) {
+                const randomListKey = Object.keys(phrases)[Math.floor(Math.random() * Object.keys(phrases).length)];
+                const randomPhrase = phrases[randomListKey][Math.floor(Math.random() * phrases[randomListKey].length)];
+                if (!options.includes(randomPhrase.french) && normalizeText(randomPhrase.french) !== normalizeText(phrase.french)) {
+                    options.push(randomPhrase.french);
+                }
+            }
+            options = shuffleArray(options);
+
+            options.forEach(option => {
+                const button = document.createElement('button');
+                button.classList.add('mc-option-button');
+                button.textContent = option;
+                button.addEventListener('click', () => {
+                    if (selectedMCOption) {
+                        selectedMCOption.classList.remove('selected');
+                    }
+                    button.classList.add('selected');
+                    selectedMCOption = button;
+                    checkButton.disabled = false;
+                });
+                mcOptionsContainer.appendChild(button);
+            });
+            checkButton.disabled = true; // Disable check until an option is selected
+        }
+
+        function setupDragAndDropExercise(phrase) {
+            dragDropExerciseDiv.style.display = 'block';
+            questionText.textContent = `Zet de woorden in de juiste volgorde om de zin te vormen: "${phrase.dutch}"`;
+            draggableWordsContainer.innerHTML = '';
+            dragDropZone.innerHTML = 'Sleep woorden hierheen...';
+            dragDropOrder = [];
+
+            // Split French sentence into words, but keep punctuation with words for display, normalize later for check
+            // Use a regex to split while keeping punctuation attached to words, or split by space and then trim/normalize
+            const words = phrase.french.split(/\s+/).filter(word => word.length > 0); // Split by one or more spaces
+            shuffleArray(words).forEach(word => {
+                const span = document.createElement('span');
+                span.classList.add('draggable-word');
+                span.textContent = word; // Display original word including punctuation
+                span.draggable = true;
+                span.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', word);
+                    setTimeout(() => { span.style.display = 'none'; }, 0); // Hide original
+                });
+                draggableWordsContainer.appendChild(span);
+            });
+
+            dragDropZone.addEventListener('dragover', (e) => {
+                e.preventDefault(); // Allow drop
+            });
+
+            dragDropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                const data = e.dataTransfer.getData('text/plain');
+                const droppedWordSpan = document.createElement('span');
+                droppedWordSpan.classList.add('dropped-word');
+                droppedWordSpan.textContent = data; // Display original word with punctuation
+                droppedWordSpan.addEventListener('click', () => {
+                    // Allow clicking to remove word from drop zone back to draggable
+                    droppedWordSpan.remove();
+                    const originalWordSpan = Array.from(draggableWordsContainer.children).find(el => el.textContent === data && el.style.display === 'none');
+                    if (originalWordSpan) {
+                        originalWordSpan.style.display = 'inline-block';
+                    }
+                    dragDropOrder = dragDropOrder.filter(wordElement => wordElement !== droppedWordSpan); // Filter by element reference
+                    if (dragDropOrder.length === 0) {
+                        dragDropZone.innerHTML = 'Sleep woorden hierheen...';
+                    }
+                    checkButton.disabled = (dragDropOrder.length === 0);
+                });
+                dragDropZone.appendChild(droppedWordSpan);
+                dragDropOrder.push(droppedWordSpan); // Store the actual span element
+
+                // Make drop zone empty text disappear if words are added
+                if (dragDropZone.textContent.includes('Sleep woorden hierheen...')) { // Check if initial text is present
+                    dragDropZone.innerHTML = '';
+                }
+                const originalDraggable = Array.from(draggableWordsContainer.children).find(el => el.textContent === data && el.style.display === 'none');
+                if (originalDraggable) {
+                    originalDraggable.style.display = 'none'; // Ensure it stays hidden
+                }
+                 checkButton.disabled = (dragDropOrder.length === 0);
+            });
+
+            dragDropZone.addEventListener('dragleave', (e) => {
+                // Add logic if needed when word leaves drop zone
+            });
+             checkButton.disabled = true; // Disable check until words are dropped
+        }
+
+        function setupMatchingExercise() {
+            matchingExerciseDiv.style.display = 'block';
+            questionText.textContent = `Match de Nederlandse en Franse zinnen.`;
+            matchingGridContainer.innerHTML = '';
+            matchingSelection = [];
+            availableMatchingPairs = [];
+
+            // Select 3-4 random phrases for matching
+            const phrasesForMatch = shuffleArray([...currentList]).slice(0, 4); // Get 4 phrases
+
+            let allCards = [];
+            phrasesForMatch.forEach(p => {
+                allCards.push({ value: p.dutch, type: 'dutch', originalDutch: p.dutch, originalFrench: p.french });
+                allCards.push({ value: p.french, type: 'french', originalDutch: p.dutch, originalFrench: p.french });
+            });
+            allCards = shuffleArray(allCards);
+
+            allCards.forEach(cardData => {
+                const card = document.createElement('div');
+                card.classList.add('match-card');
+                card.textContent = cardData.value;
+                card.dataset.type = cardData.type;
+                // Store the original Dutch and French for comparison (after normalization)
+                card.dataset.originalDutch = cardData.originalDutch;
+                card.dataset.originalFrench = cardData.originalFrench;
+
+                card.addEventListener('click', () => handleMatchCardClick(card, cardData));
+                matchingGridContainer.appendChild(card);
+            });
+
+            checkButton.style.display = 'none'; // Matching is self-checking until all pairs are made
+            nextButton.style.display = 'none';
+        }
+
+        function handleMatchCardClick(card, cardData) {
+            if (card.classList.contains('matched') || card.classList.contains('incorrect-match')) {
+                return; // Already matched or currently incorrect, do nothing
+            }
+
+            // Remove selected class from previously selected card if it's not part of a current pair
+            if (matchingSelection.length === 1 && matchingSelection[0].element !== card) {
+                matchingSelection[0].element.classList.remove('selected');
+            }
+
+            card.classList.add('selected');
+            matchingSelection.push({ element: card, data: cardData });
+
+            if (matchingSelection.length === 2) {
+                const [card1, card2] = matchingSelection;
+
+                // Check if they are a valid pair (Dutch-French and translations match)
+                const isMatch = (normalizeText(card1.data.originalDutch) === normalizeText(card2.data.originalDutch) &&
+                                 normalizeText(card1.data.originalFrench) === normalizeText(card2.data.originalFrench));
+
+                if (isMatch) {
+                    card1.element.classList.add('matched');
+                    card2.element.classList.add('matched');
+                    card1.element.classList.remove('selected');
+                    card2.element.classList.remove('selected');
+                    availableMatchingPairs.push(true); // Indicate a correct pair
+                } else {
+                    card1.element.classList.add('incorrect-match');
+                    card2.element.classList.add('incorrect-match');
+                    
+                    // Add the *correct* pair to missedPhrases, not just the selected cards
+                    const originalPhrase = currentList.find(p => 
+                        normalizeText(p.dutch) === normalizeText(card1.data.originalDutch) && 
+                        normalizeText(p.french) === normalizeText(card1.data.originalFrench)
+                    );
+                    if (originalPhrase) {
+                        missedPhrases.push(originalPhrase);
+                    } else { // Fallback if find fails (shouldn't happen with correct data)
+                        missedPhrases.push({ dutch: card1.data.originalDutch, french: card1.data.originalFrench });
+                    }
+                    
+                    // Show correct pairing if incorrect
+                    setTimeout(() => {
+                        card1.element.classList.remove('selected', 'incorrect-match');
+                        card2.element.classList.remove('selected', 'incorrect-match');
+                    }, 800); // Briefly show incorrect, then deselect
+                }
+
+                matchingSelection = []; // Reset selection
+
+                // Check if all cards are matched
+                const allMatched = Array.from(matchingGridContainer.children).every(c => c.classList.contains('matched'));
+                if (allMatched) {
+                    // Only count as correct if the *entire* exercise was matched without errors
+                    // For matching, we'll only increment correctAnswers if all are matched on first attempts
+                    // or if the user eventually gets all matched in a single "round".
+                    // For simplicity, we'll just move on and let the missedPhrases track errors.
+                    showFeedback(true, "Alle paren zijn correct gematched!");
+                    nextButton.style.display = 'block';
+                }
+            }
+        }
+
+        function setupFillInTheBlanksExercise(phrase) {
+            fillInTheBlanksExerciseDiv.style.display = 'block';
+            questionText.textContent = `Vul de ontbrekende woorden in de Franse zin aan: "${phrase.dutch}"`;
+            fillInSentenceContainer.innerHTML = '';
+
+            const frenchWords = phrase.french.split(' ');
+            // Ensure at least 1 blank, and not more than half the words, rounded up
+            const numBlanks = Math.max(1, Math.ceil(frenchWords.length / 2.5)); 
+            let blankIndices = new Set();
+            while (blankIndices.size < numBlanks) {
+                blankIndices.add(Math.floor(Math.random() * frenchWords.length));
+            }
+
+            frenchWords.forEach((word, index) => {
+                if (blankIndices.has(index)) {
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.classList.add('fill-in-blank');
+                    input.dataset.blankIndex = index;
+                    // Add a placeholder based on the length of the word (optional)
+                    input.placeholder = '_'.repeat(word.length > 0 ? Math.min(5, word.length) : 3); 
+                    fillInSentenceContainer.appendChild(input);
+                } else {
+                    const span = document.createElement('span');
+                    span.classList.add('fill-in-word');
+                    span.textContent = word + ' ';
+                    fillInSentenceContainer.appendChild(span);
+                }
+            });
+             checkButton.disabled = false; // Always enabled for fill-in-the-blanks
+        }
+
+    </script>
+</body>
+</html>
