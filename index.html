@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Frans Leren</title>
+    <title>Franse Fouten Festijn</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -450,7 +450,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>OuiOuiBaguette 🥖🇫🇷</h1>
+        <h1>Franse Fouten Festijn</h1>
 
         <div id="list-selection-area">
             <h2 class="section-title">Kies een lijst om te oefenen:</h2>
@@ -484,7 +484,8 @@
 
             <div id="drag-drop-exercise" style="display: none;">
                 <div class="drop-zone" id="drag-drop-zone">
-                    </div>
+                    Sleep woorden hierheen...
+                </div>
                 <div class="drag-drop-words" id="draggable-words-container">
                     </div>
             </div>
@@ -529,7 +530,6 @@
     </div>
 
     <script>
-        // Data structure for phrases (unchanged)
         const phrases = {
             camping: [
                 { dutch: "Goedenmiddag Meneer/Mevrouw", french: "Bonjour Monsieur/Madame" },
@@ -546,7 +546,7 @@
             terras: [
                 { dutch: "Sorry, mag ik een bestelling plaatsen", french: "Désolé, puis-je passer une commande ?" },
                 { dutch: "Ik zou graag een cola willen", french: "Je voudrais un coca, s'il vous plaît" },
-                { dutch: "Danku, is het mogelijk om hier iets te eten?", french: "Merci, est-ce possible de manger quelque chose hier?" },
+                { dutch: "Danku, is het mogelijk om hier iets te eten?", french: "Merci, est-ce possible de manger quelque chose ici?" },
                 { dutch: "Wat voor sandwiches heeft u ?", french: "Quels types de sandwichs avez-vous?" },
                 { dutch: "Ik wil graag een broodje kaas alstublieft", french: "Je voudrais un sandwich au fromage, s'il vous plaît" },
                 { dutch: "Dankuwel", french: "Merci" },
@@ -648,11 +648,10 @@
         let missedPhrases = [];
         let currentExerciseType = '';
         let selectedMCOption = null;
-        let dragDropOrder = [];
+        let dragDropOrder = []; // Stores the actual dropped DOM elements
         let matchingSelection = []; // Stores up to two selected { element, value, type } objects
         let availableMatchingPairs = [];
 
-        // Updated: Removed 'word-to-picture' as per previous decision
         const exerciseTypes = ['translation', 'multiple-choice', 'drag-and-drop', 'matching', 'fill-in-the-blanks'];
 
         // Event Listeners for List Selection
@@ -676,16 +675,59 @@
             }
         });
 
+        // FIXED: Drag and Drop event listeners added once globally
+        dragDropZone.addEventListener('dragover', (e) => {
+            e.preventDefault(); // Allow drop
+        });
+
+        dragDropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const draggedId = e.dataTransfer.getData('text/plain');
+            const originalDraggable = document.getElementById(draggedId);
+
+            if (originalDraggable && originalDraggable.parentNode === draggableWordsContainer) {
+                // Check if the word is already in the drop zone
+                const isAlreadyDropped = dragDropOrder.some(el => el.dataset.originalId === draggedId);
+                if (isAlreadyDropped) {
+                    return; // Prevent duplicate drops
+                }
+
+                const droppedWordSpan = document.createElement('span');
+                droppedWordSpan.classList.add('dropped-word');
+                droppedWordSpan.textContent = originalDraggable.textContent;
+                droppedWordSpan.dataset.originalId = draggedId; // Store original ID for reference
+
+                droppedWordSpan.addEventListener('click', () => {
+                    droppedWordSpan.remove();
+                    originalDraggable.style.display = 'inline-block'; // Make original visible again
+                    dragDropOrder = dragDropOrder.filter(wordElement => wordElement !== droppedWordSpan);
+                    if (dragDropOrder.length === 0) {
+                        dragDropZone.innerHTML = 'Sleep woorden hierheen...';
+                    }
+                    checkButton.disabled = (dragDropOrder.length === 0);
+                });
+
+                dragDropZone.appendChild(droppedWordSpan);
+                dragDropOrder.push(droppedWordSpan);
+
+                if (dragDropZone.textContent.includes('Sleep woorden hierheen...')) {
+                    dragDropZone.innerHTML = ''; // Remove placeholder
+                }
+                originalDraggable.style.display = 'none'; // Hide the original draggable
+                checkButton.disabled = (dragDropOrder.length === 0);
+            }
+        });
+
         function showSection(sectionId) {
             listSelectionArea.style.display = 'none';
             exerciseArea.style.display = 'none';
             resultsArea.style.display = 'none';
-            progressBarContainer.style.display = 'none'; // Hide progress bar by default
+            progressBarContainer.style.display = 'none';
 
             document.getElementById(sectionId).style.display = 'block';
 
             if (sectionId === 'exercise-area') {
-                progressBarContainer.style.display = 'block'; // Show progress bar when in exercise mode
+                progressBarContainer.style.display = 'block';
             }
         }
 
@@ -695,7 +737,7 @@
             correctAnswers = 0;
             incorrectAnswers = 0;
             missedPhrases = [];
-            updateProgressBar(); // Initialize progress bar
+            updateProgressBar();
             loadNewPhrase();
         }
 
@@ -717,7 +759,7 @@
             nextButton.style.display = 'none';
             hintButton.style.display = 'none';
             answerInput.value = '';
-            updateProgressBar(); // Reset progress bar
+            updateProgressBar();
         }
 
         function hideAllExerciseTypes() {
@@ -732,7 +774,8 @@
         function clearExerciseDisplays() {
             mcOptionsContainer.innerHTML = '';
             draggableWordsContainer.innerHTML = '';
-            dragDropZone.innerHTML = '';
+            dragDropZone.innerHTML = 'Sleep woorden hierheen...'; // Reset placeholder
+            dragDropOrder = []; // Clear the array when clearing display
             matchingGridContainer.innerHTML = '';
             fillInSentenceContainer.innerHTML = '';
             answerInput.value = '';
@@ -752,8 +795,6 @@
                 const phrase = currentList[currentPhraseIndex];
                 const availableTypes = [...exerciseTypes];
 
-                // Remove exercise types that don't fit the current phrase
-                // For very short phrases, fill-in-the-blanks or drag-and-drop might not be suitable
                 if (phrase.french.split(' ').length < 2) {
                     const idx = availableTypes.indexOf('drag-and-drop');
                     if (idx > -1) availableTypes.splice(idx, 1);
@@ -781,7 +822,7 @@
                         setupFillInTheBlanksExercise(phrase);
                         break;
                 }
-                updateProgressBar(); // Update progress bar for new phrase
+                updateProgressBar();
             } else {
                 showResults();
             }
@@ -795,18 +836,12 @@
             return array;
         }
 
-        /**
-         * Normalizes text by converting to lowercase, removing accents,
-         * removing punctuation, and trimming extra spaces.
-         * @param {string} text The input string.
-         * @returns {string} The normalized string.
-         */
         function normalizeText(text) {
             return text.toLowerCase()
-                       .normalize("NFD") // Decompose accented characters
-                       .replace(/[\u0300-\u036f]/g, "") // Remove diacritics (accents)
-                       .replace(/[.,!?';:"()«»-]/g, "") // Remove common punctuation, including hyphens and French quotes
-                       .replace(/\s{2,}/g, " ") // Replace multiple spaces with single space
+                       .normalize("NFD")
+                       .replace(/[\u0300-\u036f]/g, "")
+                       .replace(/[.,!?';:"()«»-]/g, "")
+                       .replace(/\s{2,}/g, " ")
                        .trim();
         }
 
@@ -816,7 +851,7 @@
             feedback.style.display = 'block';
             checkButton.style.display = 'none';
             nextButton.style.display = 'block';
-            updateProgressBar(); // Update progress bar after checking answer
+            updateProgressBar();
         }
 
         function hideFeedback() {
@@ -836,40 +871,34 @@
                     const selectedAnswer = selectedMCOption.textContent;
                     isCorrect = (normalizeText(selectedAnswer) === normalizeText(currentPhrase.french));
                 }
-                // Visual feedback for MC
                 Array.from(mcOptionsContainer.children).forEach(button => {
                     if (normalizeText(button.textContent) === normalizeText(currentPhrase.french)) {
                         button.classList.add('correct');
                     } else if (button === selectedMCOption && !isCorrect) {
                         button.classList.add('incorrect');
                     } else if (button !== selectedMCOption && !isCorrect) {
-                        // If selected was incorrect, mark the correct one for user to see
                         if (normalizeText(button.textContent) === normalizeText(currentPhrase.french)) {
                              button.classList.add('correct-after-incorrect');
                         }
                     }
                 });
-                // Disable all buttons
                 Array.from(mcOptionsContainer.children).forEach(button => button.disabled = true);
             } else if (currentExerciseType === 'drag-and-drop') {
-                const userAnswer = dragDropOrder.map(word => word.textContent).join(' ');
+                const userAnswer = dragDropOrder.map(wordElement => wordElement.textContent).join(' ');
                 const correctAnswer = currentPhrase.french;
                 isCorrect = (normalizeText(userAnswer) === normalizeText(correctAnswer));
 
-                // Visual feedback for Drag and Drop
                 dragDropZone.innerHTML = ''; // Clear and re-populate with colored words
                 const correctWords = currentPhrase.french.split(' ');
-                const userWords = dragDropOrder.map(word => word.textContent);
+                const userWords = dragDropOrder.map(wordElement => wordElement.textContent);
 
-                // This part needs adjustment to match normalized words for visual feedback
                 const normalizedCorrectWords = correctWords.map(word => normalizeText(word));
                 const normalizedUserWords = userWords.map(word => normalizeText(word));
-
 
                 for (let i = 0; i < correctWords.length; i++) {
                     const span = document.createElement('span');
                     span.classList.add('dropped-word');
-                    span.textContent = userWords[i] || '[MISSING]'; // Display actual user input or [MISSING]
+                    span.textContent = userWords[i] || '[MISSING]';
 
                     if (normalizedUserWords[i] && normalizedUserWords[i] === normalizedCorrectWords[i]) {
                         span.style.backgroundColor = 'var(--correct-answer-color)';
@@ -878,7 +907,7 @@
                     }
                     dragDropZone.appendChild(span);
                 }
-                 // Show correct answer if incorrect
+                
                 if (!isCorrect) {
                     const correctSentenceSpan = document.createElement('p');
                     correctSentenceSpan.style.color = 'var(--secondary-color)';
@@ -888,21 +917,21 @@
                     dragDropZone.appendChild(correctSentenceSpan);
                 }
 
-                // Disable dragging
+                // Disable all draggable words
                 Array.from(draggableWordsContainer.children).forEach(word => word.draggable = false);
+                // Also disable clicking on dropped words to return them
+                Array.from(dragDropZone.children).forEach(word => word.style.cursor = 'default');
+
             } else if (currentExerciseType === 'matching') {
-                // Matching exercise is self-checking as pairs are formed
-                // We check if all pairs are correctly matched
-                isCorrect = true; // Assume correct until proven otherwise
+                isCorrect = true;
                 matchingGridContainer.querySelectorAll('.match-card:not(.matched)').forEach(card => {
-                    isCorrect = false; // If any unmatched cards, it's not correct yet
+                    isCorrect = false;
                 });
                 if (!isCorrect) {
                      showFeedback(false, "Nog niet alle paren zijn correct.");
-                     // Keep current exercise open until all are matched
                      checkButton.style.display = 'block';
                      nextButton.style.display = 'none';
-                     return; // Don't proceed to score update until fully matched
+                     return;
                 } else {
                     showFeedback(true, "Alle paren zijn correct gematched!");
                 }
@@ -924,7 +953,7 @@
                         input.style.color = 'var(--danger-color)';
                         allBlanksCorrect = false;
                     }
-                    input.disabled = true; // Disable input after checking
+                    input.disabled = true;
                 });
 
                 isCorrect = allBlanksCorrect;
@@ -977,10 +1006,10 @@
             document.getElementById('correct-count').textContent = correctAnswers;
             document.getElementById('incorrect-count').textContent = incorrectAnswers;
 
-            const totalQuestions = correctAnswers + incorrectAnswers;
+            const totalQuestions = currentList.length;
             let grade = 0;
             if (totalQuestions > 0) {
-                grade = (correctAnswers / totalQuestions) * 9 + 1; // Scale to 1-10
+                grade = (correctAnswers / totalQuestions) * 9 + 1;
             }
             document.getElementById('grade').textContent = grade.toFixed(1);
 
@@ -991,7 +1020,6 @@
                 li.textContent = "Geweldig! Je had alles goed!";
                 mistakesUl.appendChild(li);
             } else {
-                // Filter out duplicate mistakes that might occur from matching exercises
                 const uniqueMistakes = Array.from(new Set(missedPhrases.map(JSON.stringify))).map(JSON.parse);
 
                 uniqueMistakes.forEach(phrase => {
@@ -1011,7 +1039,6 @@
             }
         }
 
-        // --- Progress Bar Function ---
         function updateProgressBar() {
             if (currentList.length > 0) {
                 const progress = (currentPhraseIndex / currentList.length) * 100;
@@ -1020,8 +1047,6 @@
                 progressBarFill.style.width = '0%';
             }
         }
-
-        // --- Exercise Type Setups ---
 
         function setupTranslationExercise(phrase) {
             translationExerciseDiv.style.display = 'block';
@@ -1039,7 +1064,6 @@
             selectedMCOption = null;
 
             let options = [phrase.french];
-            // Add 2-3 random incorrect options
             while (options.length < 4) {
                 const randomListKey = Object.keys(phrases)[Math.floor(Math.random() * Object.keys(phrases).length)];
                 const randomPhrase = phrases[randomListKey][Math.floor(Math.random() * phrases[randomListKey].length)];
@@ -1063,7 +1087,7 @@
                 });
                 mcOptionsContainer.appendChild(button);
             });
-            checkButton.disabled = true; // Disable check until an option is selected
+            checkButton.disabled = true;
         }
 
         function setupDragAndDropExercise(phrase) {
@@ -1071,64 +1095,26 @@
             questionText.textContent = `Zet de woorden in de juiste volgorde om de zin te vormen: "${phrase.dutch}"`;
             draggableWordsContainer.innerHTML = '';
             dragDropZone.innerHTML = 'Sleep woorden hierheen...';
-            dragDropOrder = [];
+            dragDropOrder = []; // Ensure this is cleared for each new exercise
 
-            // Split French sentence into words, but keep punctuation with words for display, normalize later for check
-            // Use a regex to split while keeping punctuation attached to words, or split by space and then trim/normalize
-            const words = phrase.french.split(/\s+/).filter(word => word.length > 0); // Split by one or more spaces
-            shuffleArray(words).forEach(word => {
+            const words = phrase.french.split(/\s+/).filter(word => word.length > 0);
+            shuffleArray(words).forEach((word, index) => {
                 const span = document.createElement('span');
                 span.classList.add('draggable-word');
-                span.textContent = word; // Display original word including punctuation
+                span.textContent = word;
                 span.draggable = true;
+                span.id = `draggable-word-${currentPhraseIndex}-${index}`; // Unique ID for each word in this exercise
+                
+                // Add event listener directly to each draggable word
                 span.addEventListener('dragstart', (e) => {
-                    e.dataTransfer.setData('text/plain', word);
-                    setTimeout(() => { span.style.display = 'none'; }, 0); // Hide original
+                    e.dataTransfer.setData('text/plain', span.id); // Transfer the ID
+                    e.dataTransfer.effectAllowed = 'move'; // Indicate a move operation
+                    // Hide the original word immediately, it will be recreated in the drop zone
+                    setTimeout(() => { span.style.display = 'none'; }, 0); 
                 });
                 draggableWordsContainer.appendChild(span);
             });
-
-            dragDropZone.addEventListener('dragover', (e) => {
-                e.preventDefault(); // Allow drop
-            });
-
-            dragDropZone.addEventListener('drop', (e) => {
-                e.preventDefault();
-                const data = e.dataTransfer.getData('text/plain');
-                const droppedWordSpan = document.createElement('span');
-                droppedWordSpan.classList.add('dropped-word');
-                droppedWordSpan.textContent = data; // Display original word with punctuation
-                droppedWordSpan.addEventListener('click', () => {
-                    // Allow clicking to remove word from drop zone back to draggable
-                    droppedWordSpan.remove();
-                    const originalWordSpan = Array.from(draggableWordsContainer.children).find(el => el.textContent === data && el.style.display === 'none');
-                    if (originalWordSpan) {
-                        originalWordSpan.style.display = 'inline-block';
-                    }
-                    dragDropOrder = dragDropOrder.filter(wordElement => wordElement !== droppedWordSpan); // Filter by element reference
-                    if (dragDropOrder.length === 0) {
-                        dragDropZone.innerHTML = 'Sleep woorden hierheen...';
-                    }
-                    checkButton.disabled = (dragDropOrder.length === 0);
-                });
-                dragDropZone.appendChild(droppedWordSpan);
-                dragDropOrder.push(droppedWordSpan); // Store the actual span element
-
-                // Make drop zone empty text disappear if words are added
-                if (dragDropZone.textContent.includes('Sleep woorden hierheen...')) { // Check if initial text is present
-                    dragDropZone.innerHTML = '';
-                }
-                const originalDraggable = Array.from(draggableWordsContainer.children).find(el => el.textContent === data && el.style.display === 'none');
-                if (originalDraggable) {
-                    originalDraggable.style.display = 'none'; // Ensure it stays hidden
-                }
-                 checkButton.disabled = (dragDropOrder.length === 0);
-            });
-
-            dragDropZone.addEventListener('dragleave', (e) => {
-                // Add logic if needed when word leaves drop zone
-            });
-             checkButton.disabled = true; // Disable check until words are dropped
+            checkButton.disabled = true; // Disable check until words are dropped
         }
 
         function setupMatchingExercise() {
@@ -1138,8 +1124,7 @@
             matchingSelection = [];
             availableMatchingPairs = [];
 
-            // Select 3-4 random phrases for matching
-            const phrasesForMatch = shuffleArray([...currentList]).slice(0, 4); // Get 4 phrases
+            const phrasesForMatch = shuffleArray([...currentList]).slice(0, 4);
 
             let allCards = [];
             phrasesForMatch.forEach(p => {
@@ -1153,7 +1138,6 @@
                 card.classList.add('match-card');
                 card.textContent = cardData.value;
                 card.dataset.type = cardData.type;
-                // Store the original Dutch and French for comparison (after normalization)
                 card.dataset.originalDutch = cardData.originalDutch;
                 card.dataset.originalFrench = cardData.originalFrench;
 
@@ -1161,16 +1145,15 @@
                 matchingGridContainer.appendChild(card);
             });
 
-            checkButton.style.display = 'none'; // Matching is self-checking until all pairs are made
+            checkButton.style.display = 'none';
             nextButton.style.display = 'none';
         }
 
         function handleMatchCardClick(card, cardData) {
             if (card.classList.contains('matched') || card.classList.contains('incorrect-match')) {
-                return; // Already matched or currently incorrect, do nothing
+                return;
             }
 
-            // Remove selected class from previously selected card if it's not part of a current pair
             if (matchingSelection.length === 1 && matchingSelection[0].element !== card) {
                 matchingSelection[0].element.classList.remove('selected');
             }
@@ -1181,7 +1164,6 @@
             if (matchingSelection.length === 2) {
                 const [card1, card2] = matchingSelection;
 
-                // Check if they are a valid pair (Dutch-French and translations match)
                 const isMatch = (normalizeText(card1.data.originalDutch) === normalizeText(card2.data.originalDutch) &&
                                  normalizeText(card1.data.originalFrench) === normalizeText(card2.data.originalFrench));
 
@@ -1190,38 +1172,31 @@
                     card2.element.classList.add('matched');
                     card1.element.classList.remove('selected');
                     card2.element.classList.remove('selected');
-                    availableMatchingPairs.push(true); // Indicate a correct pair
+                    availableMatchingPairs.push(true);
                 } else {
                     card1.element.classList.add('incorrect-match');
                     card2.element.classList.add('incorrect-match');
                     
-                    // Add the *correct* pair to missedPhrases, not just the selected cards
                     const originalPhrase = currentList.find(p => 
                         normalizeText(p.dutch) === normalizeText(card1.data.originalDutch) && 
                         normalizeText(p.french) === normalizeText(card1.data.originalFrench)
                     );
                     if (originalPhrase) {
                         missedPhrases.push(originalPhrase);
-                    } else { // Fallback if find fails (shouldn't happen with correct data)
+                    } else {
                         missedPhrases.push({ dutch: card1.data.originalDutch, french: card1.data.originalFrench });
                     }
                     
-                    // Show correct pairing if incorrect
                     setTimeout(() => {
                         card1.element.classList.remove('selected', 'incorrect-match');
                         card2.element.classList.remove('selected', 'incorrect-match');
-                    }, 800); // Briefly show incorrect, then deselect
+                    }, 800);
                 }
 
-                matchingSelection = []; // Reset selection
+                matchingSelection = [];
 
-                // Check if all cards are matched
                 const allMatched = Array.from(matchingGridContainer.children).every(c => c.classList.contains('matched'));
                 if (allMatched) {
-                    // Only count as correct if the *entire* exercise was matched without errors
-                    // For matching, we'll only increment correctAnswers if all are matched on first attempts
-                    // or if the user eventually gets all matched in a single "round".
-                    // For simplicity, we'll just move on and let the missedPhrases track errors.
                     showFeedback(true, "Alle paren zijn correct gematched!");
                     nextButton.style.display = 'block';
                 }
@@ -1234,7 +1209,6 @@
             fillInSentenceContainer.innerHTML = '';
 
             const frenchWords = phrase.french.split(' ');
-            // Ensure at least 1 blank, and not more than half the words, rounded up
             const numBlanks = Math.max(1, Math.ceil(frenchWords.length / 2.5)); 
             let blankIndices = new Set();
             while (blankIndices.size < numBlanks) {
@@ -1247,7 +1221,6 @@
                     input.type = 'text';
                     input.classList.add('fill-in-blank');
                     input.dataset.blankIndex = index;
-                    // Add a placeholder based on the length of the word (optional)
                     input.placeholder = '_'.repeat(word.length > 0 ? Math.min(5, word.length) : 3); 
                     fillInSentenceContainer.appendChild(input);
                 } else {
@@ -1257,7 +1230,7 @@
                     fillInSentenceContainer.appendChild(span);
                 }
             });
-             checkButton.disabled = false; // Always enabled for fill-in-the-blanks
+             checkButton.disabled = false;
         }
 
     </script>
